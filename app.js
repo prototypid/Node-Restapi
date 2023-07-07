@@ -10,6 +10,7 @@ const MONGODB_URI = `mongodb://${config.database_username}:${config.database_pas
 const app = express();
 
 app.use(bodyParser.json());
+app.use("/images", express.static("images"));
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
