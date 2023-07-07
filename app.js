@@ -1,8 +1,10 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const config = require("./utils/config");
 
 const feedRoutes = require("./routes/feed");
 
+const MONGODB_URI = `mongodb://${config.database_username}:${config.database_password}@${config.database_host}:${config.database_port}/${config.database_name}?authSource=admin&w=1`;
 const app = express();
 
 app.use(bodyParser.json());
