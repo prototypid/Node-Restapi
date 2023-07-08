@@ -2,10 +2,11 @@ const express = require("express");
 const { body } = require("express-validator");
 
 const User = require("../models/user");
-const authControllers = require("../controllers/auth");
+const authController = require("../controllers/auth");
 
 const router = express.Router();
 
+// POST /auth/signup
 router.post(
   "/signup",
   [
@@ -25,7 +26,10 @@ router.post(
       }),
     body("password").trim().isLength({ min: 5 }),
   ],
-  authControllers.signUp
+  authController.signUp
 );
+
+// POST /auth/login
+router.post("/login", authController.login);
 
 module.exports = router;

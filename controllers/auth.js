@@ -38,3 +38,36 @@ exports.signUp = (req, res, next) => {
       next(err);
     });
 };
+
+exports.login = (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  let currentUser;
+
+  User.findOne({ email: email })
+    .then((user) => {
+      if (!user) {
+        const error = new Error("Invalid Email or Password.");
+        error.statusCode = 401; // not authenticated
+        throw error;
+      }
+
+      currentUser = user;
+
+      // validata password
+      return bcrypt.compare(password, post.password);
+    })
+    .then((passwordMatched) => {
+      if (!passwordMatched) {
+        const error = new Error("Invalid Email or Password");
+        error.statusCode = 401;
+        throw error;
+      }
+
+      // generate webToken
+    })
+    .catch((err) => {
+      if (!err.statusCode) err.statusCode = 500;
+      next(err);
+    });
+};
