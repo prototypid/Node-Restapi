@@ -20,16 +20,39 @@ const clearImage = (filePath) => {
 };
 
 exports.getPosts = (req, res, next) => {
+  const currentPage = req.query.page || 1;
+  const perPage = 2;
+  let totalItems;
+
   Post.find()
-    .then((posts) => {
-      res.status(200).json({
-        posts: posts,
-      });
+    .countDocuments()
+    .then((count) => {
+      totalItems = count;
+      return Post.find()
+        .skip((currentPage - 1) * perPage)
+        .limit(perPage);
     })
-    .catch((err) => {
-      const e = addStatusCodeToErrorObject(err);
-      next(e);
-    });
+    .then((posts) => {
+      res
+        .status(200)
+        .json({
+          message: "Fetched posts successfully.",
+          posts: posts,
+          totalItems: totalItems,
+        });
+    })
+    .catch((err) => next(err));
+
+  // Post.find()
+  //   .then((posts) => {
+  //     res.status(200).json({
+  //       posts: posts,
+  //     });
+  //   })
+  //   .catch((err) => {
+  //     const e = addStatusCodeToErrorObject(err);
+  //     next(e);
+  //   });
 };
 
 exports.createPost = (req, res, next) => {
