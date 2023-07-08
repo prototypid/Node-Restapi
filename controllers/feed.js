@@ -2,7 +2,6 @@ const fs = require("fs");
 const path = require("path");
 const { validationResult } = require("express-validator");
 const Post = require("../models/post");
-const post = require("../models/post");
 
 const addStatusCodeToErrorObject = (errorObject, statusCode = 500) => {
   if (!errorObject.statusCode) errorObject.statusCode = statusCode;
@@ -145,6 +144,27 @@ exports.updatePost = (req, res, next) => {
     })
     .catch((err) => {
       if (!err.statusCode) err.statusCode = 500;
+      next(err);
+    });
+};
+
+exports.deletePost = (req, res, next) => {
+  const postId = req.params.postId;
+
+  Post.findById(postId)
+    .then((post) => {
+      if (!post) {
+        throw createNewErrorObject("Post not found.", 404);
+      }
+
+      // check logged in user
+      clearImage(post.imageUrl);
+      return Post.findByIdAndRemove(postId);
+    })
+    .then((result) => {
+      res.status(200).json({ message: "Post Deleted.", post: result });
+    })
+    .catch((err) => {
       next(err);
     });
 };
