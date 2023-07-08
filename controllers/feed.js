@@ -1,16 +1,23 @@
 const { validationResult } = require("express-validator");
 const Post = require("../models/post");
+const post = require("../models/post");
+
+const addStatusCodeToErrorObject = (errorObject, statusCode = 500) => {
+  if (!errorObject.statusCode) errorObject.statusCode = statusCode;
+  return errorObject;
+};
 
 exports.getPosts = (req, res, next) => {
-  res.status(200).json({
-    posts: [
-      {
-        title: "First Post",
-        content: "Content of the first post.",
-        imageURL: "images/night_montain_view.jpeg",
-      },
-    ],
-  });
+  Post.find()
+    .then((posts) => {
+      res.status(200).json({
+        posts: posts,
+      });
+    })
+    .catch((err) => {
+      const e = addStatusCodeToErrorObject(err);
+      next(e);
+    });
 };
 
 exports.createPost = (req, res, next) => {
@@ -46,4 +53,22 @@ exports.createPost = (req, res, next) => {
 
       next(err);
     });
+};
+
+exports.getPost = (req, res, next) => {
+  const postId = req.params.postId;
+
+  Post.findById(postId)
+    .then((post) => {
+      // post not found
+      if (!post) {
+        const error = new Error("Could not find post.");
+        error.statusCode = 404;
+        throw error;
+      }
+
+      // post found
+      res.status(200).json({ message: "Post fetched", post: post });
+    })
+    .catch((err) => next(err)); // we set 500 statusCode in error handling middleware
 };
