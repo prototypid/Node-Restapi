@@ -196,18 +196,26 @@ exports.deletePost = (req, res, next) => {
         throw createNewErrorObject("Post not found.", 404);
       }
 
-      if (post.creator.toString() !== req.userId) {
-        const error = new Error("Not authorized.");
-        error.statusCode = 403;
-        throw error;
-      }
+      // if (post.creator.toString() !== req.userId) {
+      //   const error = new Error("Not authorized.");
+      //   error.statusCode = 403;
+      //   throw error;
+      // }
 
       // check logged in user
       clearImage(post.imageUrl);
       return Post.findByIdAndRemove(postId);
     })
+    .then(() => {
+      return User.findById(req.userId);
+    })
+    .then((user) => {
+      user.posts.pull(postId); // mongoose gives pull method to remove the post from post array
+      return user.save();
+    })
     .then((result) => {
-      res.status(200).json({ message: "Post Deleted.", post: result });
+      console.log(result);
+      res.status(200).json({ message: "Post Deleted." });
     })
     .catch((err) => {
       next(err);
