@@ -1,7 +1,9 @@
 const fs = require("fs");
 const path = require("path");
 const { validationResult } = require("express-validator");
+
 const Post = require("../models/post");
+const User = require("../models/user");
 
 const addStatusCodeToErrorObject = (errorObject, statusCode = 500) => {
   if (!errorObject.statusCode) errorObject.statusCode = statusCode;
@@ -33,13 +35,11 @@ exports.getPosts = (req, res, next) => {
         .limit(perPage);
     })
     .then((posts) => {
-      res
-        .status(200)
-        .json({
-          message: "Fetched posts successfully.",
-          posts: posts,
-          totalItems: totalItems,
-        });
+      res.status(200).json({
+        message: "Fetched posts successfully.",
+        posts: posts,
+        totalItems: totalItems,
+      });
     })
     .catch((err) => next(err));
 
@@ -75,20 +75,29 @@ exports.createPost = (req, res, next) => {
   const imageUrl = req.file.path;
   const title = req.body.title;
   const content = req.body.content;
+  let creator;
 
   const post = new Post({
     title: title,
     content: content,
     imageUrl: imageUrl,
-    creator: { name: "Thatsboy" },
+    creator: req.userId, // Added by the isAuth middleware
   });
   post
     .save()
+    .then(() => {
+      return User.findById(req.userId);
+    })
+    .then((user) => {
+      creator = user;
+      user.posts.push(post);
+      return user.save();
+    })
     .then((result) => {
-      console.log(result);
       res.status(201).json({
         message: "Post created successfully!",
-        post: result,
+        post: post,
+        creator: { id: creator._id, name: creator.name },
       });
     })
     .catch((err) => {
