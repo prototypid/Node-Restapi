@@ -10,4 +10,5 @@ module.exports = {
   database_port: process.env.DATABASE_PORT,
   database_name: process.env.DATABASE_NAME,
   jwt_secret: process.env.JWT_SECRET,
+  test_database_name: process.env.TEST_DATABASE_NAME,
 };
